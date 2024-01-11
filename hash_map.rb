@@ -1,9 +1,8 @@
 class HashMap
-  attr_accessor :buckets
+  attr_accessor :buckets, :capacity
   def initialize
     @buckets = Array.new(16)
-    @load_factor = 0.75
-
+    @capacity = self.buckets.length
   end
 
   def hash(string)
@@ -19,25 +18,48 @@ class HashMap
     hash_code
   end
 
+  def load_factor_reached?
+    load_factor = 0.75
+    current_capacity = self.length.to_f
+    overall_capacity = self.capacity.to_f
+    result = overall_capacity / current_capacity
+    return true if result.round(2) >= load_factor
+    false
+  end
+
+  def resize_array
+    new_array = Array.new(@capacity*2/2)
+    self.buckets = self.buckets + new_array
+  end
+
+  def clear
+    newArray = Array.new(self.buckets.length)
+    self.buckets.replace(newArray)
+  end
+
   def length
+    count = 0
     self.buckets.each do |bucket|
-      puts bucket
+     next if bucket.nil?
+     count += bucket.count_keys
     end
+    count
   end
 
   def remove(key)
-    index = hash(key) % 16
+    index = hash(key) % @capacity
     @buckets[index].delete(key)
   end
 
   def get(key)
-    index = hash(key) % 16
+    index = hash(key) % @capacity
     @buckets[index].get_value(key)
   end
 
   def set(key,value)
-  index = hash(key) % 16
+  index = hash(key) % @capacity
   raise IndexError if index.negative? || index >= @buckets.length
+  resize_array if load_factor_reached?
   if @buckets[index].nil?
     list = LinkedList.new
     node = Node.new(key,value)
@@ -128,6 +150,16 @@ class LinkedList
     end
   end
 
+  def count_keys
+    count = 0
+    current = self.head
+    while current
+      count+=1
+      current = current.next_node
+    end
+    count
+  end
+
 end
 
 
@@ -135,4 +167,4 @@ hash_map = HashMap.new
 
 hash_map.set('string','abcd')
 hash_map.set('strrr', 'value')
-25.times{hash_map.set("#{rand(100)}",'value')}
+# 25.times{hash_map.set("#{rand(100)}",'value')}
