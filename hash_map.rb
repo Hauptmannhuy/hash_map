@@ -19,8 +19,25 @@ class HashMap
     hash_code
   end
 
+  def length
+    self.buckets.each do |bucket|
+      puts bucket
+    end
+  end
+
+  def remove(key)
+    index = hash(key) % 16
+    @buckets[index].delete(key)
+  end
+
+  def get(key)
+    index = hash(key) % 16
+    @buckets[index].get_value(key)
+  end
+
   def set(key,value)
   index = hash(key) % 16
+  raise IndexError if index.negative? || index >= @buckets.length
   if @buckets[index].nil?
     list = LinkedList.new
     node = Node.new(key,value)
@@ -30,15 +47,13 @@ class HashMap
     node = Node.new(key,value)
     @buckets[index].append(node)
   else
-    list_head = @buckets[index].head
-    @buckets[index].replace_value(key, value, list_head)
+    @buckets[index].replace_value(key, value)
   end
 end
 
 
 def key?(key,index)
-  list_head = @buckets[index].head
- @buckets[index].find_key(key, list_head)
+ @buckets[index].key_exist?(key)
 end
 
 end
@@ -71,8 +86,25 @@ class LinkedList
     end
   end
 
-  def find_key(key, head)
-    current = head
+  def delete(key)
+    current = self.head
+    return @head = current.next_node if current.key == key
+    while current.next_node.key != key
+      current = current.next_node
+      return "no key found." if current.next_node == nil
+    end
+    if current.next_node == @tail
+      @tail = current
+    return  @tail.next_node = nil
+  else
+    back_chain = current
+    2.times{ current = current.next_node }
+    back_chain.next_node = current
+    end
+  end
+
+  def key_exist?(key)
+    current = self.head
     while current do
       return true if current.key == key
       current = current.next_node
@@ -80,8 +112,16 @@ class LinkedList
     false
   end
 
-  def replace_value(key, value, head)
-    current = head
+  def get_value(key)
+    current = self.head
+    while current
+      return current.value if current.key == key
+      current = current.next_node
+    end
+  end
+
+  def replace_value(key, value)
+    current = self.head
     while current
       return current.value = value if current.key == key
       current = current.next_node
@@ -95,3 +135,4 @@ hash_map = HashMap.new
 
 hash_map.set('string','abcd')
 hash_map.set('strrr', 'value')
+25.times{hash_map.set("#{rand(100)}",'value')}
