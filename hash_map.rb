@@ -2,7 +2,7 @@ class HashMap
   attr_accessor :buckets, :capacity
   def initialize
     @buckets = Array.new(16)
-    @capacity = self.buckets.length
+    @capacity = 16
   end
 
   def hash(string)
@@ -17,24 +17,30 @@ class HashMap
   
     hash_code
   end
-
+  
   def load_factor_reached?
     load_factor = 0.75
-    current_capacity = self.length.to_f
-    overall_capacity = self.capacity.to_f
-    result = overall_capacity / current_capacity
+    occupied = self.length.to_f
+    capacity = @capacity
+    result = occupied / capacity
     return true if result.round(2) >= load_factor
     false
   end
 
   def resize_array
-    new_array = Array.new(@capacity*2/2)
+    new_array = Array.new(@capacity)
     self.buckets = self.buckets + new_array
+    update_capacity
+  end
+
+  def update_capacity
+    new_capacity = @capacity + @capacity
+    @capacity = new_capacity
   end
 
   def clear
-    newArray = Array.new(self.buckets.length)
-    self.buckets.replace(newArray)
+    new_array = Array.new(self.buckets.length)
+    self.buckets.replace(new_array)
   end
 
   def length
@@ -56,7 +62,7 @@ class HashMap
     @buckets[index].get_value(key)
   end
 
-  def set(key,value)
+  def set(key = rand(1000).to_s, value = rand(100).to_s)
   index = hash(key) % @capacity
   raise IndexError if index.negative? || index >= @buckets.length
   resize_array if load_factor_reached?
@@ -163,8 +169,4 @@ class LinkedList
 end
 
 
-hash_map = HashMap.new
 
-hash_map.set('string','abcd')
-hash_map.set('strrr', 'value')
-# 25.times{hash_map.set("#{rand(100)}",'value')}
